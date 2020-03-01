@@ -1,52 +1,60 @@
 import scrapy
 import pandas as pd
+from collector.items import CollectorItem
 
-URL = "https://www.bbc.com/"
-
-
-
-
-def clean(string):
-    value = string.encode('utf8')
-    value = value.strip()
-    return value
 
 
 class CollectorSpider(scrapy.Spider):
     name = "collector"
 
+    allowed_domains = ['theguardian.com']
+    start_urls = ['https://www.theguardian.com/']
+
+    def clean(self, string):
+        encoded = string.encode('utf8')
+        cleaned = encoded.strip()
+        return cleaned
+
+    def clean_list(self, list):
+        for x in list:
+            x = x.encode('utf8')
+
+
+    def extract_authors(self, authors_list):
+        authors = []
+        for author in authors_list:
+            cleanded = self.clean(author)
+            name = cleanded.split('/')[-1]
+            authors.append(name)
+        return authors
+
+
     def start_requests(self):
-        yield scrapy.Request(url=URL, callback=self.parse)
+        yield scrapy.Request(url='https://www.theguardian.com/', callback=self.parse)
 
 
     def parse(self, response):
-        
-        contents_list = []
-        
-        media_contents = response.css('div.media__content')
-        for media_content in media_contents:
-            content = {}
+        media_links = response.selector.xpath('//a[@data-link-name="article"] //@href').extract()
 
-            media_title = media_content.css('h3.media__title')
-            title = media_title.xpath('a//text()').extract()
-            if title :
-                content['title'] = clean(title[0])
+        for media_link in media_links :
+            link = self.clean(media_link)
+            yield scrapy.Request(url=link, callback=self.collect_content)
 
-            href = media_title.xpath('a//@href').extract()
-            if href :
-                content['href'] = clean(href[0])
+    def collect_content(self, response):
+        media_content = response.xpath('//html')
 
-            tag = media_content.xpath('a//text()').extract()
-            if tag:
-                content['tag'] = clean(tag[0])
+        title = media_content.xpath('//meta[@property="og:title"] /@content').extract_first()
+        authors = media_content.xpath("//meta[@property='article:author']/@content").extract()
+        link = media_content.xpath("//meta[@property='og:url']/@content").extract()
+        publish_time = media_content.xpath("//meta[@property='article:published_time']/@content").extract()
+        description = media_content.xpath("//meta[@property='og:description']/@content").extract()
 
-            summary = media_content.xpath('p//text()').extract()
-            if summary:
-                content['summary'] = clean(summary[0])
-             
-            contents_list.append(content)
-        
-        df = pd.DataFrame(contents_list)
-        df.to_csv('./bbc.csv', index=False)
-            
-         
+
+        media = CollectorItem()
+
+        media['title'] = self.clean(title)
+        media['author'] = self.extract_authors(authors)
+        media['link'] = self.clean(link[0]) 
+        media['publish_time'] = self.clean(publish_time[0])
+        media['description'] = self.clean(description[0])
+        yield media
