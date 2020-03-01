@@ -21,6 +21,11 @@ NEWSPIDER_MODULE = 'collector.spiders'
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
 
+
+ITEM_PIPELINES = {'collector.pipelines.MongoDBPipeline': 300 }
+MONGODB_DB = "theguardian"
+MONGODB_COLLECTION = "news"
+
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
 
