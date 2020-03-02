@@ -17,4 +17,5 @@ class CollectorItem(scrapy.Item):
     publish_time = Field()
     link = Field()
     keywords = Field()
+    articles = Field()
     pass
