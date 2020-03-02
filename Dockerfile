@@ -13,6 +13,6 @@ COPY ./api /app
 
 ENTRYPOINT [ "python" ]
 
-EXPOSE 8001
+EXPOSE 8100
 
 CMD [ "app.py" ]

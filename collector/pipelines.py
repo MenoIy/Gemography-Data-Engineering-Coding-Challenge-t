@@ -22,11 +22,14 @@ from scrapy.exceptions import DropItem
 class MongoDBPipeline(object):
 
     def __init__(self):
+        #mongodb connection
         client = pymongo.MongoClient("mongodb+srv://menoly:sakata-1@cluster0-ehtfy.gcp.mongodb.net/test?retryWrites=true&w=majority")
-
+        
+        #getting the collection
         db = client['theguardian']
         self.client = db['news']
 
     def process_item(self, item, spider):
+        '''inserting item to database'''
         self.client.insert(dict(item))
         return item
