@@ -8,11 +8,14 @@ class CollectorSpider(scrapy.Spider):
     name = "collector"
 
     allowed_domains = ['theguardian.com']
-    start_urls = ['https://www.theguardian.com/']
 
 
     def start_requests(self):
-        yield scrapy.Request(url='https://www.theguardian.com/', callback=self.parse)
+        #list of multiple page of the website
+        start_urls = ['https://www.theguardian.com/', 'https://www.theguardian.com/uk/commentisfree', 'https://www.theguardian.com/uk/sport', 'https://www.theguardian.com/uk/culture', 'https://www.theguardian.com/uk/lifeandstyle']
+        for url in start_urls:
+            #iterate over all url and scrap data
+            yield scrapy.Request(url=url, callback=self.parse)
 
 
     def parse(self, response):

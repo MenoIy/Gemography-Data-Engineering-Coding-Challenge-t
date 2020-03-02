@@ -25,7 +25,10 @@ class MongoDBPipeline(object):
         #mongodb connection
         client = pymongo.MongoClient("mongodb+srv://menoly:sakata-1@cluster0-ehtfy.gcp.mongodb.net/test?retryWrites=true&w=majority")
         
-        #getting the collection
+        #drop the collection
+        client.drop_database('theguardian')
+
+        #create new collection
         db = client['theguardian']
         self.client = db['news']
 
